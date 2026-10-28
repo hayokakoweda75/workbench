@@ -1,0 +1,24 @@
+name: bb-radar
+on:
+  schedule:
+    - cron: "23 5 * * *"   # daily 05:23 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: run radar
+        working-directory: .
+        run: python3 radar/radar.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: commit results
+        run: |
+          git config user.name "bb-radar-bot"
+          git config user.email "bb-radar@users.noreply.github.com"
+          git add radar/seen.json radar/latest.md
+          git diff --cached --quiet || git commit -m "radar: $(date -u +%F)"
+          git push
