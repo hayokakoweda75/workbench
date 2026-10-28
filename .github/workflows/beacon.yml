@@ -1,0 +1,14 @@
+name: beacon
+on:
+  workflow_dispatch:
+jobs:
+  specs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: prove compute
+        run: |
+          echo "== uname =="; uname -a
+          echo "== cpu =="; nproc; cat /proc/cpuinfo | grep 'model name' | head -2
+          echo "== ram =="; free -h | head -2
+          echo "== disk =="; df -h / | tail -1
+          echo "== tools =="; git --version; python3 --version; node --version; docker --version 2>/dev/null | head -1
