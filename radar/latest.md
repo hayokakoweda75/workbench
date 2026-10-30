@@ -1,13 +1,14 @@
-## 🎯 BB-radar 2026-10-29
+## 🎯 BB-radar 2026-10-30
 
 | score | repo | catatan | live | channel |
 |---|---|---|---|---|
-| 15 | `antidotefinance/antidote-cap` | Antidote 1B supply cap program for Solana | mainnet | - |
-| 10 | `squadzdotfun/fair-launch-protocol` | Squadz Fair Launch Protocol: fair group launches on Solana. Mainnet program BstpzKnft3hQNaae8TWL8KnUsff6wMZEtn | mainnet | - |
-| 10 | `payrogen/payrogen-program` | Solana Smart Contract | - | - |
-| 10 | `antidotefinance/antidote-programs` | Antidote on-chain programs (Solana) | mainnet | SECURITY.md |
-| 8 | `theeharrison/lockstep` | A trustless, milestone-based escrow protocol on Solana. Lockstep secures funds for freelance work, DAO bountie | mainnet | - |
-| 6 | `sparkler-labs/contracts-solana` | PostOffice & Vault on Solana — Anchor programs for encrypted package delivery and password-protected custody | mainnet | - |
-| 6 | `psditital-dev/program-b8c4f9` | Solana program (verifiable build) | mainnet | - |
-| 5 | `fixtheonchain/fix-solana` | The Solana program behind fix.  | - | - |
-| 5 | `auroraxo/reeflog` | Durable local mailbox for Solana events — cursor-addressed append-only journal with gap-fill and reorg sealing | mainnet | - |
+| 15 | `psditital-dev/program-6532ba` | Solana program (verifiable build) | mainnet | - |
+| 12 | `Surfacing-8671/staking-rewards` | Launches Bush v3 ReClamm and weighted pools whose creator fees fund a staking rewards rack and protocol-owned  | - | - |
+| 10 | `joaquinbejar/varswap` | Realized variance accumulated on-chain from Pyth prices, and variance swaps settled against it, on Solana | - | - |
+| 8 | `thangvu0301983-collab/elonphil-contracts` | ELON PHIL XXXL ($ELONPHILXXXL): Phil Vault with the Phil AI Jab Pool, and the exact sources of the Programmabl | - | - |
+| 6 | `paranoiddotred/paranoid` | Ask AI models without anyone learning who asked: zkAPI-style RLN tickets and Groth16 proofs on Solana. The sou | mainnet | SECURITY.md |
+| 6 | `Stardust-LLM/contract-stardust` | STARDUST smart contracts (Foundry): staking, Energy token/store/vault, liquidity pool and StardustArt NFT on R | mainnet | - |
+| 5 | `joaquinbejar/quotebook` | RFQ on Solana: maker quotes signed off-chain with ed25519, verified and settled atomically on-chain by a Pinoc | - | - |
+| 4 | `step-finance-oss/step-staking` | Solana single-token staking vault with proportional receipt shares, reward accrual, and local regression tests | - | - |
+| 4 | `identity-md-launches/launch-2680-uniswap-v4-hook` | A Uniswap v4 hook: # JOB ORDER: SigmaHook v2 — Remove Vault, Add Operator Parameters # REPO: github.com/identi | - | - |
+| 4 | `identity-md-launches/launch-2658-sigmahook` | markdown # JOB ORDER: Uniswap v4 Hook (Auto-Vault) # PAIR: Launch Token / WETH ## 1. Core Objective Build a Un | - | - |
