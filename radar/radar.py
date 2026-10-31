@@ -2,7 +2,7 @@
 """Daily bug-bounty target radar (GitHub Actions free tier).
 Finds freshly-published contract repos, scores money-path signals, dedupes vs
 radar/seen.json, writes radar/latest.md and commits both back."""
-import base64, datetime, json, os, urllib.parse, urllib.request
+import base64, datetime, json, os, re, urllib.parse, urllib.request
 
 H = {"Accept": "application/vnd.github+json", "User-Agent": "bb-radar"}
 TOK = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
@@ -26,15 +26,75 @@ def readme(full):
     except Exception:
         return ""
 
+def sec_text(full):
+    """Isi SECURITY.md bila ada (dipotong 4000 char)."""
+    try:
+        d = gh(f"/repos/{full}/contents/SECURITY.md")
+        return base64.b64decode(d["content"]).decode("utf-8", "replace")[:4000]
+    except Exception:
+        return ""
+
+
+def has_contract_code(full):
+    """True bila root repo memuat artefak kontrak (foundry/hardhat/anchor/cargo program)."""
+    try:
+        names = {e["name"].lower() for e in gh(f"/repos/{full}/contents/")}
+    except Exception:
+        return False
+    if {"foundry.toml", "hardhat.config.js", "hardhat.config.ts", "anchor.toml", "programs"} & names:
+        return True
+    if "cargo.toml" in names:
+        try:
+            t = gh(f"/repos/{full}/contents/Cargo.toml")
+            body = base64.b64decode(t["content"]).decode("utf-8", "replace").lower()
+            return "solana-program" in body or "anchor-lang" in body
+        except Exception:
+            return False
+    return False
+
+
+PAY = {
+    "immunefi": "Immunefi", "bugcrowd": "Bugcrowd", "hackerone": "HackerOne",
+    "cantina": "Cantina", "code4rena": "Code4rena", "sherlock": "Sherlock",
+    "hackenproof": "HackenProof", "yeswehack": "YesWeHack", "intigriti": "Intigriti",
+}
+MONEY_RE = re.compile(r"(?:\$|USD[TC]?\s?)\s?([0-9][0-9,\.]{2,})", re.I)
+
+
+def bounty_signal(sec, readme_text):
+    """Kembalikan (skor_bonus, label_kanal). Kosong = tidak ada jalur hadiah."""
+    t = (sec + " " + readme_text)
+    low = t.lower()
+    chan = next((v for k, v in PAY.items() if k in low), "")
+    if not chan and "security@" in low:
+        chan = "email"
+    monies = [float(m.replace(",", "")) for m in MONEY_RE.findall(t)]
+    big = max(monies) if monies else 0
+    says_pay = any(k in low for k in ("bounty", "reward", "bug hunt", "payout", "compensation"))
+    if chan and big >= 1000:
+        return 6, f"{chan} (max {int(big)})"
+    if chan:
+        return 4, chan
+    if says_pay and big >= 1000:
+        return 4, f"direct (max {int(big)})"
+    if says_pay:
+        return 3, "direct/bounty"
+    return 1, "security.md saja"
+
+
 W = [r"\bfee", "vault", "treasury", "curve", "swap", "amm", "pool", "stake",
      "escrow", "bonding", "lending", "royalt", "reward"]
 HOT = ["mainnet", "program", "anchor", "deployed", "verifiable"]
 BAD = ["test", "tutorial", "example", "course", "bootcamp", "prereq",
-       "security advisories", "reverse-engineer", "analyzer"]
+       "security advisories", "reverse-engineer", "analyzer", "writeup", "hall of fame",
+       "profile", "collection", "curated", "tracker", "aggregator", "cli", "toolkit",
+       "cheat sheet", "awesome", "list of", "newsletter", "blog"]
 
 items = {}
 for q in ["language:Rust solana", "language:Rust bonding curve", "language:Rust anchor program",
-          "language:Solidity vault", "language:Solidity staking"]:
+          "language:Solidity vault", "language:Solidity staking",
+          "bug bounty in:readme language:Rust", "bug bounty in:readme language:Solidity",
+          "immunefi in:readme", "audit competition in:readme"]:
     since = (datetime.date.today() - datetime.timedelta(days=4)).isoformat()
     qs = urllib.parse.quote(f"{q} created:>{since}")
     try:
@@ -47,16 +107,19 @@ rows = []
 for full, i in items.items():
     if full in seen:
         continue
-    text = ((i.get("description") or "") + " " + readme(full)).lower()
+    readme_text = readme(full)
+    text = ((i.get("description") or "") + " " + readme_text).lower()
+    sec = sec_text(full)
+    bonus, chan = (0, "-") if not sec else bounty_signal(sec, "")
     score = sum(2 for k in W if k in text) + sum(3 for k in HOT if k in text) \
           - sum(5 for k in BAD if k in text)
     has_audit_word = "audit" in text and "security.md" not in text
     if has_audit_word:
         score -= 2
-    if score >= 3:
+    score += bonus
+    if score >= 3 and bonus >= 3 and has_contract_code(full):          # hanya target yang punya jalur hadiah
         rows.append((score, full, (i.get("description") or "")[:110],
-                     "mainnet" if "mainnet" in text else "-",
-                     "SECURITY.md" if "security.md" in text else "-"))
+                     "mainnet" if "mainnet" in text else "-", chan))
 
 new_names = sorted(i for i in items if i not in seen)
 if not rows:
